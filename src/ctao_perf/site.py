@@ -77,7 +77,10 @@ def _page(title, body, depth=0):
 Generated {stamp} by <a href="{REPO_URL}">ctao-performances</a> v{__version__}
 from the public CTAO instrument response functions, using
 <a href="https://gammapy.org">gammapy</a>. These are not official CTAO products;
-refer to the <a href="https://www.ctao.org/for-scientists/performance/">CTAO performance page</a>.
+refer to the <a href="https://www.ctao.org/for-scientists/performance/">CTAO performance page</a>.<br>
+IRFs and official figures &copy; CTAO, licensed under
+<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>;
+see the DOI of each release. Reproduced figures: CC BY 4.0. Code: BSD 3-Clause.
 </footer>
 </main>
 </body>

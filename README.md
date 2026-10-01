@@ -87,9 +87,36 @@ Known data issues handled in `irfs.py`: empty energy-dispersion columns at
 the highest energies (e.g. prod5 North 50 h) are filled with the last
 populated column.
 
-## Acknowledgement
+## Citation
 
-This work uses the CTAO instrument response functions provided by the CTAO
-Observatory and Consortium (prod5 v0.1, doi:10.5281/zenodo.5499840; Prod6 v1.0,
-doi:10.5281/zenodo.22871179). The figures published here are not official
-CTAO products.
+See [`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button).
+If you use the figures or the code, please also cite the IRF releases and
+include the acknowledgements requested by CTAO:
+
+- prod5 v0.1, [doi:10.5281/zenodo.5499840](https://doi.org/10.5281/zenodo.5499840):
+  "This research has made use of the CTA instrument response functions
+  provided by the CTA Observatory and Consortium, see
+  https://www.cta-observatory.org/science/cta-performance/ (version prod5 v0.1;
+  https://doi.org/10.5281/zenodo.5499840) for more details."
+- Prod6 v1.0, [doi:10.5281/zenodo.22871179](https://doi.org/10.5281/zenodo.22871179):
+  "This research has made use of the CTAO Prod6 instrument response functions,
+  Prod6 v1.0, provided by the CTAO and archived at
+  https://doi.org/10.5281/zenodo.22871179." CTAO also asks to cite CORSIKA,
+  sim_telarray, the Prod6 telescope model, Eventdisplay and Eventdisplay-ML;
+  see the BibTeX file shipped with the record.
+
+The computations use [gammapy](https://gammapy.org)
+([Donath et al. 2023, A&A 678, A157](https://doi.org/10.1051/0004-6361/202346488)).
+
+## License
+
+- Code: [BSD 3-Clause](LICENSE).
+- Data: the CTAO instrument response functions are distributed by CTAO under
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). They are downloaded
+  from Zenodo at run time and are not included in this repository.
+- Figures: the generated figures are derived from those IRFs and are shared
+  under CC BY 4.0, with attribution to CTAO and the DOI of the release. The
+  official figures shown for comparison on the website come unmodified from the
+  same Zenodo records, also under CC BY 4.0.
+
+These figures are not official CTAO products.

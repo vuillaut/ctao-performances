@@ -7,6 +7,8 @@ name = "ctao-perf"
 version = "0.1.0"
 description = "Reproduce CTAO performance figures from the public instrument response functions"
 readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 authors = [{ name = "Thomas Vuillaume" }]
 requires-python = ">=3.10"
 dependencies = [

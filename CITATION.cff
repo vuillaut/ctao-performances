@@ -1,0 +1,60 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it as below. Please also cite the CTAO
+  instrument response functions it relies on (listed under references) and
+  follow the acknowledgement requested in their Zenodo records.
+title: "ctao-performances: CTAO performance figures reproduced from the public instrument response functions"
+type: software
+authors:
+  - family-names: Vuillaume
+    given-names: Thomas
+    affiliation: "Univ. Savoie Mont Blanc, CNRS, LAPP"
+repository-code: "https://github.com/vuillaut/ctao-performances"
+url: "https://vuillaut.github.io/ctao-performances/"
+license: BSD-3-Clause
+version: 0.1.0
+keywords:
+  - CTAO
+  - gamma-ray astronomy
+  - instrument response functions
+  - sensitivity
+  - gammapy
+references:
+  - type: data
+    title: "CTAO Instrument Response Functions - prod5 version v0.1"
+    authors:
+      - name: "Cherenkov Telescope Array Observatory"
+      - name: "Cherenkov Telescope Array Consortium"
+    version: v0.1
+    date-released: 2021-09-23
+    publisher:
+      name: Zenodo
+    doi: 10.5281/zenodo.5499840
+    url: "https://doi.org/10.5281/zenodo.5499840"
+    license: CC-BY-4.0
+  - type: data
+    title: "CTAO Instrument Response Functions - Prod6 version v1.0"
+    authors:
+      - name: "CTA Observatory"
+    version: 1.0.0
+    date-released: 2026-09-21
+    publisher:
+      name: Zenodo
+    doi: 10.5281/zenodo.22871179
+    url: "https://doi.org/10.5281/zenodo.22871179"
+    license: CC-BY-4.0
+  - type: article
+    title: "Gammapy: A Python package for gamma-ray astronomy"
+    authors:
+      - family-names: Donath
+        given-names: Axel
+      - family-names: Terrier
+        given-names: Régis
+      - family-names: Remy
+        given-names: Quentin
+      - name: others
+    journal: "Astronomy & Astrophysics"
+    volume: 678
+    start: A157
+    year: 2023
+    doi: 10.1051/0004-6361/202346488
