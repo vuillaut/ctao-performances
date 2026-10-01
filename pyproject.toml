@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ctao-perf"
+version = "0.1.0"
+description = "Reproduce CTAO performance figures from the public instrument response functions"
+readme = "README.md"
+authors = [{ name = "Thomas Vuillaume" }]
+requires-python = ">=3.10"
+dependencies = [
+    "gammapy>=2.1",
+    # gammapy 2.1 imports a private helper removed in regions 0.11
+    "regions>=0.8,<0.11",
+    "matplotlib>=3.7",
+    "numpy",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+ctao-perf = "ctao_perf.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ctao_perf"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["data: needs the downloaded IRFs (run `ctao-perf download` first)"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::SyntaxWarning"]

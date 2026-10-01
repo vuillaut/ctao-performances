@@ -1,0 +1,57 @@
+name: prod6-v1.0
+title: CTAO Prod6 v1.0 (Beta configuration)
+configuration: Beta
+description: >
+  Beta configuration: CTAO-North with 4 LSTs and 9 MSTs, CTAO-South with
+  2 LSTs, 14 MSTs and 37 SSTs. Published in September 2026.
+doi: 10.5281/zenodo.22871179
+zenodo:
+  record: 22871179
+  file: ctao-prod6-zenodo-v1.0-fits-only.zip
+
+filename: "Prod6-CTAO-{site}-{zenith}deg-{azimuth}-{telescopes}-{condition}-{duration}s-v1.0.fits.gz"
+
+sites:
+  North:
+    label: CTAO Northern Array
+    telescopes: 4LSTs09MSTs
+    location: ctao_north
+    e_min_tev: 0.0126
+  South:
+    label: CTAO Southern Array
+    telescopes: 2LSTs14MSTs37SSTs
+    location: ctao_south
+    e_min_tev: 0.02
+
+zenith: 20
+zeniths: [20, 40, 52, 60]
+azimuth: AverageAz
+condition: dark
+
+durations:
+  50 h: 180000
+  5 h: 18000
+  30 min: 1800
+  100 s: 100
+reference_duration: 180000
+
+energy_resolution_axis: true_energy
+
+short_term:
+  duration: 1800
+  energies_gev: [25, 40, 75, 100, 250]
+
+offaxis:
+  bins_tev: [[0.05, 0.08], [0.5, 0.8], [5, 8], [50, 80]]
+
+reference_figures:
+  sensitivity-durations-North: CTAO-Performance-Prod6-v1.0-North-Beta-ObsTime-Sensitivity.png
+  sensitivity-durations-South: CTAO-Performance-Prod6-v1.0-South-Beta-ObsTime-Sensitivity.png
+  sensitivity-north-south: CTAO-Performance-Prod6-v1.0-NorthSouth-Beta-50h-SensitivityNoOtherInstruments.png
+  angular-resolution: CTAO-Performance-Prod6-v1.0-NorthSouth-Beta-50h-AngularResolution.png
+  energy-resolution: CTAO-Performance-Prod6-v1.0-NorthSouth-Beta-50h-EnergyResolution.png
+  effective-area-North: CTAO-Performance-Prod6-v1.0-North-Beta-50h-EffectiveArea-NoDirectionCuts.png
+  effective-area-South: CTAO-Performance-Prod6-v1.0-South-Beta-50h-EffectiveArea-NoDirectionCuts.png
+  background-rate: CTAO-Performance-Prod6-v1.0-NorthSouth-Beta-50h-BackgroundRate.png
+  offaxis-sensitivity-North: CTAO-Performance-Prod6-v1.0-North-Beta-50h-OffAxisRelativeSensitivity.png
+  offaxis-sensitivity-South: CTAO-Performance-Prod6-v1.0-South-Beta-50h-OffAxisRelativeSensitivity.png

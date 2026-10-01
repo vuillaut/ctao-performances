@@ -1,0 +1,60 @@
+name: prod5-v0.1
+title: CTAO prod5 v0.1 (Alpha configuration)
+configuration: Alpha
+description: >
+  Alpha configuration: CTAO-North with 4 LSTs and 9 MSTs, CTAO-South with
+  14 MSTs and 37 SSTs. Published in September 2021.
+doi: 10.5281/zenodo.5499840
+zenodo:
+  record: 5499840
+  file: cta-prod5-zenodo-fitsonly-v0.1.zip
+
+# Name of the individual IRF files inside the tarballs.
+filename: "Prod5-{site}-{zenith}deg-{azimuth}-{telescopes}.{duration}s-v0.1.fits.gz"
+
+sites:
+  North:
+    label: CTAO Northern Array
+    telescopes: 4LSTs09MSTs
+    location: ctao_north
+    e_min_tev: 0.02
+  South:
+    label: CTAO Southern Array
+    telescopes: 14MSTs37SSTs
+    location: ctao_south
+    e_min_tev: 0.05
+
+zenith: 20
+zeniths: [20, 40, 60]
+azimuth: AverageAz
+condition: dark
+
+# label -> optimisation time in seconds (as encoded in the file names)
+durations:
+  50 h: 180000
+  5 h: 18000
+  30 min: 1800
+reference_duration: 180000
+
+energy_resolution_axis: reco_energy
+
+short_term:
+  duration: 1800
+  energies_gev: [25, 40, 75, 100, 250]
+
+offaxis:
+  bins_tev: [[0.05, 0.08], [0.5, 0.8], [5, 8], [50, 80]]
+
+# Official figures shipped in the Zenodo archive, shown next to ours.
+reference_figures:
+  sensitivity-durations-North: CTA-Performance-prod5-v0.1-North-Alpha50h-DifferentialSensitivity-DifferentObservationTime.png
+  sensitivity-durations-South: CTA-Performance-prod5-v0.1-South-Alpha50h-DifferentialSensitivity-DifferentObservationTime.png
+  sensitivity-north-south: CTA-Performance-prod5-v0.1-NorthSouth-Alpha50h-DifferentialSensitivity.png
+  angular-resolution: CTA-Performance-prod5-v0.1-NorthSouth50h-AngularResolution-OtherInstruments.png
+  energy-resolution: CTA-Performance-prod5-v0.1-South-Alpha50h-EnergyResolution.png
+  effective-area-North: CTA-Performance-prod5-v0.1-North-Alpha-EffectiveArea-NoDirectionCuts.png
+  effective-area-South: CTA-Performance-prod5-v0.1-South-Alpha-EffectiveArea-NoDirectionCuts.png
+  background-rate: CTA-Performance-prod5-v0.1-North-NorthSouth50h-BackgroundRate.png
+  offaxis-sensitivity-North: CTA-Performance-prod5-v0.1-North-Alpha50h-OffAxisRelativeSensitivity.png
+  offaxis-sensitivity-South: CTA-Performance-prod5-v0.1-South-Alpha50h-OffAxisRelativeSensitivity.png
+  sensitivity-time-North: CTA-Performance-prod5-v0.1-North-Alpha-ShortTermSensitivity.png

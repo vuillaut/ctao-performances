@@ -1,0 +1,64 @@
+name: Build figures and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          uv venv
+          uv pip install -e ".[test]"
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+
+      # The Zenodo bundles only change when a release description changes.
+      - name: Cache IRFs
+        uses: actions/cache@v4
+        with:
+          path: data
+          key: irfs-${{ hashFiles('src/ctao_perf/releases/*.yaml') }}
+
+      - name: Download IRFs from Zenodo
+        run: ctao-perf download
+
+      - name: Tests
+        run: pytest -v
+
+      - name: Build figures and website
+        run: ctao-perf site -o public
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
