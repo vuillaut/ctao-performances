@@ -9,6 +9,7 @@ authors:
   - family-names: Vuillaume
     given-names: Thomas
     affiliation: "Univ. Savoie Mont Blanc, CNRS, LAPP"
+    orcid: "https://orcid.org/0000-0002-5686-2078"
 repository-code: "https://github.com/vuillaut/ctao-performances"
 url: "https://vuillaut.github.io/ctao-performances/"
 license: BSD-3-Clause
