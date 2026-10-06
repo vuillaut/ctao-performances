@@ -18,6 +18,8 @@ dependencies = [
     "matplotlib>=3.7",
     "numpy",
     "pyyaml",
+    "markdown",
+    "uproot",
 ]
 
 [project.optional-dependencies]

@@ -29,15 +29,16 @@ jobs:
           uv pip install -e ".[test]"
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
-      # The Zenodo bundles only change when a release description changes.
+      # The Zenodo bundles only change when a release description changes. Only the needed
+      # ROOT files are kept (about 200 MB), not the 1 GB bundle.
       - name: Cache IRFs
         uses: actions/cache@v4
         with:
           path: data
           key: irfs-${{ hashFiles('src/ctao_perf/releases/*.yaml') }}
 
-      - name: Download IRFs from Zenodo
-        run: ctao-perf download
+      - name: Download IRFs from Zenodo (FITS and ROOT)
+        run: ctao-perf download --root
 
       - name: Tests
         run: pytest -v

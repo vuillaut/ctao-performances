@@ -8,6 +8,7 @@ doi: 10.5281/zenodo.22871179
 zenodo:
   record: 22871179
   file: ctao-prod6-zenodo-v1.0-fits-only.zip
+  root_file: ctao-prod6-zenodo-v1.0.zip   # bundle with the ROOT files (~1 GB)
 
 filename: "Prod6-CTAO-{site}-{zenith}deg-{azimuth}-{telescopes}-{condition}-{duration}s-v1.0.fits.gz"
 
