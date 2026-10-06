@@ -1,8 +1,10 @@
 # CTAO performances
 
 Reproduce the performance figures of the Cherenkov Telescope Array Observatory
-(CTAO) from the instrument response functions (IRFs) published on Zenodo, using
-[gammapy](https://gammapy.org).
+(CTAO) from the instrument response functions (IRFs) published on Zenodo, in two ways:
+recomputed with [gammapy](https://gammapy.org) from the FITS IRFs, and read from the
+official curves stored in the ROOT files (Prod6). Every figure comes with an ASCII file
+of its data points and a script to plot it.
 
 The figures are rebuilt by CI and published at
 **https://vuillaut.github.io/ctao-performances/**, next to the official
@@ -20,13 +22,15 @@ Supported releases:
 ```bash
 pip install -e .            # or: uv pip install -e .
 ctao-perf list              # bundled releases and figure producers
-ctao-perf download prod6-v1.0
-ctao-perf figures prod6-v1.0 -o figures
-ctao-perf site              # download + figures + static website in ./public
+ctao-perf download prod6-v1.0            # FITS IRFs
+ctao-perf download --root prod6-v1.0     # + official curves from the ROOT files (1.1 GB download)
+ctao-perf figures prod6-v1.0 -o figures  # figures/prod6-v1.0/{gammapy,root}/<id>.{png,dat,py}
+ctao-perf site              # download + figures + documentation + static website in ./public
 ```
 
 IRFs are downloaded to `./data/<release>/` (change with `--data-dir`).
-`--only sensitivity_durations energy_resolution` restricts the figures.
+`--only sensitivity_durations energy_resolution` restricts the figures and
+`--sources gammapy` or `--sources root` restricts the data they come from.
 
 The building blocks can also be used directly:
 
@@ -41,6 +45,13 @@ irfs = IRFLibrary(release, "data").load("South", 180000, zenith=40)
 axis, e2dnde, table = perf.sensitivity(irfs, livetime=50 * u.h, location="ctao_south")
 ```
 
+## Documentation
+
+Full documentation, organised after the Divio system, is in [`docs/`](docs/index.md):
+[tutorials](docs/tutorials/getting-started.md), [how-to guides](docs/how-to/index.md),
+[reference](docs/reference/index.md), [explanation](docs/explanation/index.md) and a
+[description of the data files](docs/data/index.md) (HDUs, columns, GADF compliance).
+
 ## Layout
 
 ```
@@ -51,6 +62,10 @@ src/ctao_perf/
   irfs.py           IRF lookup from the naming pattern, loading and fixes
   performance.py    release-independent computations (sensitivity, resolutions, ...)
   plotting.py       shared matplotlib style
+  sources.py        GammapySource / RootSource: the same quantities from FITS or ROOT
+  root.py           official curves read from the ROOT files (uproot)
+  curves.py         Curve: the arrays behind every plotted line
+  ascii.py          data file and plot script written for each figure
   figures.py        figure producers (registered with @producer)
   site.py           static website
   cli.py            `ctao-perf` command
@@ -61,13 +76,16 @@ src/ctao_perf/
 Copy one of the YAML files in `src/ctao_perf/releases/`, then adapt the Zenodo
 record and file name, the `filename` pattern of the individual FITS files, the
 telescope string of each site, the available zenith angles and durations, and
-the mapping to the official figures. Every figure producer then runs on the new
-release, and CI publishes it.
+the mapping to the official figures, and the ROOT bundle if there is one
+(`zenodo.root_file`). Every figure producer then runs on the new release, and CI
+publishes it.
 
 ### Adding a figure
 
 Write a generator in `figures.py` decorated with `@producer` that takes a
-`Context` and yields `FigureResult`s. It runs for every release.
+`Context`, reads its data from `ctx.src` (gammapy or ROOT) and yields
+`FigureResult`s. It runs for every release and source, and gets its data file
+and plot script automatically.
 
 ## Method
 
@@ -78,10 +96,11 @@ of reconstructed energy. Energy resolution is the 68% half-width of
 (E_R − E_T)/E_T, weighted by the effective area and an E^-2.62 spectrum.
 
 The official figures are produced from the full simulations with cuts
-optimised per energy bin, and from the ROOT files for the PSF. Expect
-differences of tens of percent near the energy threshold and at the highest
-energies. Where a release ships its official sensitivity in the FITS files
-(Prod6), a validation figure compares both.
+optimised per energy bin. For Prod6 the official curves are read from the ROOT
+files and shown next to the gammapy ones. Over 0.1–50 TeV our sensitivity is
+about 10 % above the official one; it is off by more near the energy threshold
+and above 50 TeV. Each curve, with the approximations and the measured gap, is
+described in `docs/explanation/differences-from-official.md`.
 
 Known data issues handled in `irfs.py`: empty energy-dispersion columns at
 the highest energies (e.g. prod5 North 50 h) are filled with the last
