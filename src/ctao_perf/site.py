@@ -89,8 +89,8 @@ def _page(title, body, depth=0):
 <main>
 {body}
 <footer>
-Generated {stamp} by <a href="{REPO_URL}">ctao-performances</a> v{__version__}
-from the public CTAO instrument response functions, using
+Generated {stamp} from repository <a href="{REPO_URL}">ctao-performances</a> v{__version__}
+with the help of Claude Opus 5.5 from the public CTAO instrument response functions, using
 <a href="https://gammapy.org">gammapy</a>. These are not official CTAO products;
 refer to the <a href="https://www.ctao.org/for-scientists/performance/">CTAO performance page</a>.<br>
 IRFs and official figures &copy; CTAO, licensed under
