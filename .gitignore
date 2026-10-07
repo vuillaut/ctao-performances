@@ -1,5 +1,5 @@
 .venv/
-data/
+/data/
 public/
 figures/
 __pycache__/

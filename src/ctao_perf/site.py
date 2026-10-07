@@ -89,8 +89,8 @@ def _page(title, body, depth=0):
 <main>
 {body}
 <footer>
-Generated {stamp} by <a href="{REPO_URL}">ctao-performances</a> v{__version__}
-from the public CTAO instrument response functions, using
+Generated {stamp} from repository <a href="{REPO_URL}">ctao-performances</a> v{__version__}
+with the help of Claude Opus 5.5 from the public CTAO instrument response functions, using
 <a href="https://gammapy.org">gammapy</a>. These are not official CTAO products;
 refer to the <a href="https://www.ctao.org/for-scientists/performance/">CTAO performance page</a>.<br>
 IRFs and official figures &copy; CTAO, licensed under
@@ -174,9 +174,11 @@ the FITS IRFs (on region = 68% PSF containment, off/on ratio
 {1 / release.sensitivity.alpha:g}, {release.sensitivity.n_sigma:g}σ, ≥{release.sensitivity.gamma_min:g}
 excess events, S/B ≥ {release.sensitivity.bkg_syst_fraction:g}); the <strong>official curves read
 from the ROOT files</strong> (same histograms as CTAO's figures, replotted here); and the
-<strong>official PNG</strong> from the Zenodo archive. The gammapy curves use a simpler analysis
-than CTAO's (cuts optimised per energy bin, full PSF), so expect differences of tens of percent,
-mostly near the energy threshold and at the highest energies.
+<strong>official PNG</strong> from the Zenodo archive. The gammapy curves use the FITS files only:
+they describe a source {release.offset_bin[0]:g}–{release.offset_bin[1]:g}° from the camera centre (the curves of the CTAO figures are for a source on axis), and the on
+region is the 68% PSF containment radius instead of CTAO's optimised direction cut, which the FITS
+files do not contain. Expect the sensitivity to differ by 2–8% between 0.1 and 10 TeV, and by
+10–50% above 10 TeV and below 0.04 TeV.
 {docs_details}Each curve can be downloaded as an ASCII file.</div>
 <ul class="toc">{''.join(toc)}</ul>
 {''.join(sections)}

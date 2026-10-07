@@ -214,74 +214,96 @@ def sensitivity_zenith(ctx: Context):
         )
 
 
-def _official_sensitivities(ctx: Context, site):
-    """Official sensitivities available for a site: ``[(label, Curve)]``."""
-    out = []
+def _official_at_offset(ctx: Context, site):
+    """Official sensitivity in the offset bin of the source, the one the FITS IRFs describe.
+
+    ``(label, Curve)`` from ``DiffSens_offaxis`` in the ROOT file, or from the
+    ``DIFFERENTIAL SENSITIVITY`` HDU of the FITS file (same values) when the ROOT file is missing.
+    """
     if ctx.root.available() and ctx.root.exists(site.key):
-        out.append(("official (ROOT file)", ctx.root.sensitivity(site.key)))
+        curve, (lo, hi) = ctx.root.sensitivity_at_offset(site.key, ctx.offset)
+        return f"official, {lo:g}–{hi:g}° off axis (ROOT file)", curve
     provided = ctx.gammapy.irfs.provided_sensitivity(site.key, ctx.release.reference_duration)
-    if provided is not None:
-        e_edges, t_edges, table = provided
-        theta = 0.5 * (t_edges[:-1] + t_edges[1:])
-        j = int(np.argmin(np.abs(theta - ctx.offset)))
-        out.append(("tabulated in the FITS file", Curve.binned(e_edges.to_value("TeV"), table[j])))
-    return out
+    if provided is None:
+        return None
+    e_edges, t_edges, table = provided
+    t_edges, offset = t_edges.to_value("deg"), ctx.offset.to_value("deg")
+    j = int(np.clip(np.searchsorted(t_edges, offset, side="right") - 1, 0, len(t_edges) - 2))
+    label = f"official, {t_edges[j]:g}–{t_edges[j + 1]:g}° off axis (FITS file)"
+    return label, Curve.binned(e_edges.to_value("TeV"), table[j])
+
+
+def _official_on_axis(ctx: Context, site):
+    """``DiffSens`` of the ROOT file: the official curve, for a source on the camera axis."""
+    if ctx.root.available() and ctx.root.exists(site.key):
+        return "official, on axis (ROOT file)", ctx.root.sensitivity(site.key)
+    return None
+
+
+def _validation(ctx: Context, site, ours, official, suffix, where, why):
+    """The gammapy sensitivity next to one official sensitivity, and their ratio."""
+    rel = ctx.release
+    label, official = official
+    official = ctx.mask(site.key, official).with_label(label)
+    fig, ax = _sens_axes()
+    draw_curve(ax, official, 1)
+    draw_curve(ax, ours, 0, open_marker=True)
+    ax.legend(loc="upper center", title=f"{site.label} ({_ref_label(rel)})")
+    yield FigureResult(
+        f"sensitivity-validation{suffix}-{site.key}",
+        f"{site.label}: gammapy sensitivity vs official sensitivity, {where}",
+        "Validation: the sensitivity computed with gammapy from the effective area, PSF, "
+        f"energy dispersion and background of the FITS file, next to the official one {where}. "
+        + why + " See the documentation for why they differ.",
+        ctx.finish(fig, ax), [official, ours],
+        "Reconstructed gamma-ray energy E_R [TeV]", _SENS_LABEL_TXT,
+    )
+
+    if not (official.is_binned and len(official.y) == len(ours.y)
+            and np.allclose(official.xlo, ours.xlo, rtol=1e-3)
+            and np.allclose(official.xhi, ours.xhi, rtol=1e-3)):
+        log.warning("%s: no ratio to %s, its energy bins differ from ours", site.key, label)
+        return
+    ratio = Curve(ours.x, ours.y / official.y, ours.xlo, ours.xhi, f"gammapy / {label}").positive()
+    fig, ax = new_figure((8, 4))
+    draw_curve(ax, ratio, 1)
+    ax.axhline(1, color="#888888", ls="--", lw=1)
+    ax.set(xscale="log", yscale="log", xlim=(1e-2, 300), ylim=(0.3, 3),
+           xlabel=E_RECO_LABEL, ylabel="gammapy / official")
+    ax.legend(loc="upper center", title=f"{site.label} ({_ref_label(rel)})")
+    yield FigureResult(
+        f"sensitivity-ratio{suffix}-{site.key}",
+        f"{site.label}: ratio of the gammapy sensitivity to the official one, {where}",
+        f"The gammapy sensitivity divided by the official sensitivity {where}, bin by bin. "
+        "A ratio above 1 means the gammapy sensitivity is worse (a larger flux is needed).",
+        ctx.finish(fig, ax), [ratio],
+        "Reconstructed gamma-ray energy E_R [TeV]", "gammapy / official", hline=1.0,
+    )
 
 
 @producer(sources=("gammapy",))
 def sensitivity_validation(ctx: Context):
-    """Our sensitivity next to the official ones (ROOT file, and FITS HDU when present)."""
-    rel = ctx.release
+    """The gammapy sensitivity next to the official one, for the source offset bin and on axis."""
     for site in ctx.sites:
-        officials = _official_sensitivities(ctx, site)
-        if not officials or not ctx.gammapy.exists(site.key):
+        if not ctx.gammapy.exists(site.key):
             continue
         ours = ctx.mask(site.key, ctx.gammapy.sensitivity(site.key)).with_label("computed with gammapy")
-        fig, ax = _sens_axes()
-        curves = []
-        for k, (label, curve) in enumerate(officials):
-            curve = ctx.mask(site.key, curve).with_label(label)
-            draw_curve(ax, curve, k + 1)
-            curves.append(curve)
-        draw_curve(ax, ours, 0, open_marker=True)
-        curves.append(ours)
-        ax.legend(loc="upper center", title=f"{site.label} ({_ref_label(rel)})")
-        yield FigureResult(
-            f"sensitivity-validation-{site.key}",
-            f"{site.label}: gammapy sensitivity vs official sensitivity",
-            "Validation: our sensitivity, computed with gammapy from the effective area, PSF, "
-            "energy dispersion and background of the FITS file, next to the official one "
-            "(DiffSens in the ROOT file"
-            + (", DIFFERENTIAL SENSITIVITY HDU of the FITS file" if len(officials) > 1 else "")
-            + "). See the documentation for why they differ.",
-            ctx.finish(fig, ax), curves,
-            "Reconstructed gamma-ray energy E_R [TeV]", _SENS_LABEL_TXT,
-        )
-
-        fig, ax = new_figure((8, 4))
-        ratios = []
-        for k, (label, curve) in enumerate(officials):
-            curve = ctx.mask(site.key, curve)
-            if not (curve.is_binned and len(curve.y) == len(ours.y)
-                    and np.allclose(curve.xlo, ours.xlo, rtol=1e-3)
-                    and np.allclose(curve.xhi, ours.xhi, rtol=1e-3)):
-                log.warning("%s: no ratio to %s, its energy bins differ from ours", site.key, label)
-                continue
-            ratio = Curve(ours.x, ours.y / curve.y, ours.xlo, ours.xhi, f"gammapy / {label}").positive()
-            draw_curve(ax, ratio, k + 1)
-            ratios.append(ratio)
-        ax.axhline(1, color="#888888", ls="--", lw=1)
-        ax.set(xscale="log", yscale="log", xlim=(1e-2, 300), ylim=(0.3, 3),
-               xlabel=E_RECO_LABEL, ylabel="gammapy / official")
-        ax.legend(loc="upper center", title=f"{site.label} ({_ref_label(rel)})")
-        yield FigureResult(
-            f"sensitivity-ratio-{site.key}",
-            f"{site.label}: ratio of our sensitivity to the official one",
-            "Our gammapy sensitivity divided by each official sensitivity, bin by bin. "
-            "A ratio above 1 means our sensitivity is worse (a larger flux is needed).",
-            ctx.finish(fig, ax), ratios,
-            "Reconstructed gamma-ray energy E_R [TeV]", "gammapy / official", hline=1.0,
-        )
+        official = _official_at_offset(ctx, site)
+        if official is not None:
+            yield from _validation(
+                ctx, site, ours, official, "", "for the same source offset",
+                "The FITS IRFs describe a source in this 1° offset bin, so this is the official "
+                "curve the gammapy calculation can be compared with.",
+            )
+        official = _official_on_axis(ctx, site)
+        if official is not None:
+            lo, hi = ctx.release.offset_bin
+            yield from _validation(
+                ctx, site, ours, official, "-onaxis", "on the camera axis",
+                "This is the curve of the official CTAO figures. It is for a source on the camera "
+                f"axis, while the FITS IRFs are for a source {lo:g}–{hi:g}° off axis"
+                + (", where the sensitivity is a few percent worse." if lo == 0 else "."),
+            )
 
 
 @producer

@@ -53,5 +53,5 @@ The site key (`North`, `South`) is also substituted into `{site}`.
 
 ## `sensitivity`
 
-`n_sigma`, `gamma_min`, `bkg_syst_fraction`, `alpha`, `containment`. Defaults
+`n_sigma`, `gamma_min`, `bkg_syst_fraction`, `alpha`, `containment`, `spectral_index`. Defaults
 and meaning in [Change the sensitivity criteria](../how-to/change-sensitivity-criteria.md).

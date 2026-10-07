@@ -10,21 +10,27 @@ to `gammapy.estimators.SensitivityEstimator`.
 1. **Geometry.** Pointing at (0°, 0°) ICRS, source `offset` (0.5°) away. Reconstructed
    energy axis: 5 bins per decade from 10^-1.9 to 10^2.3 TeV (21 bins). True-energy
    axis: 25 bins per decade, 0.005–500 TeV.
-2. **Exposure, energy dispersion and background** come from `SpectrumDatasetMaker`
+2. **Exposure and energy dispersion** come from `SpectrumDatasetMaker`
    applied to an `Observation` with the IRFs and the livetime. The livetime is in
    general the optimisation time of the file, but it can differ (sensitivity vs
    time).
 3. **On region = 68 % containment.** In each energy bin, the on-region radius is the
    68 % PSF containment radius at that energy and offset. The exposure is
-   multiplied by 0.68. The background was computed for a 0.1° reference circle, so
-   it is scaled by the ratio of solid angles `(1 − cos r) / (1 − cos 0.1°)`.
-4. **Off regions.** `acceptance_off = 1/alpha = 5`: five times the on exposure.
-5. **Detection criteria** (`SensitivityCriteria`): 5σ (Li & Ma), at least 10 excess
+   multiplied by 0.68.
+4. **Background** is the `BKG` rate at the source offset and at the centre of each
+   reconstructed-energy bin, times the bin width, the solid angle of the on region
+   `2π (1 − cos r)` and the livetime. It is not taken from `SpectrumDatasetMaker`,
+   whose log-log integration underestimates the background near the threshold.
+5. **Off regions.** `acceptance_off = 1/alpha = 5`: five times the on exposure.
+6. **Detection criteria** (`SensitivityCriteria`): 5σ (Li & Ma), at least 10 excess
    events, excess at least 5 % of the background.
-6. **Output** is E² dN/dE in erg cm⁻² s⁻¹ for a power-law spectrum in each bin; bins
-   with a non-finite or non-positive result become NaN.
+7. **Output** is E² dN/dE in erg cm⁻² s⁻¹ for a power law of index 2.62
+   (`spectral_index`) in each bin, at the arithmetic mean of the bin edges, as in the
+   official curves. Bins with a non-finite or non-positive result become NaN.
 
-These steps contain approximations; each is listed, with the measured effect, in
+Only the FITS file is used. The official analysis optimises the direction cut in each
+bin, and this cut is not stored in the FITS files, so step 3 replaces it with a fixed
+containment fraction. These steps contain approximations; each is listed, with the measured effect, in
 [Why the gammapy figures differ from the official ones](differences-from-official.md).
 
 ## Angular resolution

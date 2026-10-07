@@ -10,7 +10,8 @@ or `root` (official curves from the ROOT files), and saved as `<source>/<id>.png
 | `sensitivity_durations` | `sensitivity-durations-<site>` (per site) | gammapy, root | Differential sensitivity for each observation time, each with its own optimised IRF | `DiffSens` |
 | `sensitivity_north_south` | `sensitivity-north-south` | gammapy, root | Both sites, reference duration | `DiffSens` |
 | `sensitivity_zenith` | `sensitivity-zenith-<site>` (per site) | gammapy, root | Sensitivity vs zenith angle; skipped if fewer than two zeniths exist | `DiffSens` |
-| `sensitivity_validation` | `sensitivity-validation-<site>`, `sensitivity-ratio-<site>` (per site) | gammapy | Our sensitivity next to the official one (ROOT, and the FITS HDU when present), and the ratio of the two | `DiffSens` |
+| `sensitivity_validation` | `sensitivity-validation-<site>`, `sensitivity-ratio-<site>` (per site) | gammapy | The gammapy sensitivity next to the official one for the same source offset bin (0–1° by default), and the ratio of the two. The official curve is `DiffSens_offaxis` from the ROOT file, or the FITS `DIFFERENTIAL SENSITIVITY` HDU when the ROOT file is missing | `DiffSens_offaxis` |
+| `sensitivity_validation` | `sensitivity-validation-onaxis-<site>`, `sensitivity-ratio-onaxis-<site>` (per site) | gammapy | Same, against the on-axis official sensitivity of the CTAO figures (needs the ROOT file) | `DiffSens` |
 | `offaxis_sensitivity` | `offaxis-sensitivity-<site>` (per site) | gammapy, root | Sensitivity vs FoV offset, relative to the first offset, for selected energy bands (needs `offaxis.bins_tev`) | `DiffSens_offaxis` |
 | `sensitivity_vs_time` | `sensitivity-time-<site>` (per site) | gammapy | Sensitivity vs observation time (10 s–10⁴ s) at fixed energies (needs `short_term`) | none |
 | `angular_resolution` | `angular-resolution` | gammapy, root | 68 % containment radius vs true energy | `AngResEtrue` |

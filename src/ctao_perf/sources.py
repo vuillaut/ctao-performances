@@ -110,6 +110,17 @@ class RootSource:
     def sensitivity(self, site, duration=None, **selection) -> Curve:
         return root.differential_sensitivity(self._path(site, duration, **selection))
 
+    def sensitivity_at_offset(self, site, offset, duration=None):
+        """``DiffSens_offaxis`` in the 1° offset bin containing ``offset``: ``(Curve, (lo, hi))``.
+
+        The FITS IRFs are this bin (bin 0, 0–1°, for the default 0.5° offset), whereas
+        ``DiffSens`` is for a source on the camera axis.
+        """
+        theta, e_edges, values = root.differential_sensitivity_offaxis(self._path(site, duration))
+        j = int(np.clip(np.searchsorted(theta, u.Quantity(offset, "deg").value, side="right") - 1,
+                        0, len(theta) - 2))
+        return Curve.binned(e_edges, values[j]), (theta[j], theta[j + 1])
+
     def sensitivity_offaxis(self, site, duration=None):
         theta, e_edges, values = root.differential_sensitivity_offaxis(self._path(site, duration))
         centres = 0.5 * (theta[:-1] + theta[1:])
