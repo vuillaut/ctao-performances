@@ -57,7 +57,8 @@ exists.
 
 **Download is idempotent.** `.unpacked` marks a finished unpack. The Zenodo zip and
 the tarballs are deleted once the FITS files are extracted, so a release takes
-44 MB (Prod5) and 120 MB (Prod6) on disk.
+44 MB (Prod5) and 120 MB (Prod6) on disk for the FITS files. `ctao-perf download --root` adds the ROOT
+files that the figures use: about 137 MB (Prod5) and 205 MB (Prod6).
 
 ## Caching
 

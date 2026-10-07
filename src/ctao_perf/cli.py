@@ -90,10 +90,10 @@ def main(argv=None):
             out = args.output / r.name
             manifest = make_figures(r, args.data_dir, out / "figures", only=args.only,
                                     sources=args.sources)
-            build_release_page(r, manifest, args.data_dir, out)
+            build_release_page(r, manifest, args.data_dir, out, docs=args.docs_dir.is_dir())
             entries.append((r, manifest))
-        build_index(entries, args.output)
-        build_docs(args.docs_dir, args.output)
+        has_docs = build_docs(args.docs_dir, args.output)
+        build_index(entries, args.output, docs=has_docs)
         print(f"Website written to {args.output}/index.html")
 
 

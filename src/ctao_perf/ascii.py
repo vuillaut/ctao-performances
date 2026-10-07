@@ -9,6 +9,16 @@ import numpy as np
 COLUMNS = ("series", "x", "xlo", "xhi", "y")
 
 
+def series_names(curves) -> list[str]:
+    """One distinct token per curve: ``Curve.name``, with ``_2``, ``_3``... added on repeats."""
+    seen, names = {}, []
+    for c in curves:
+        n = seen.get(c.name, 0) + 1
+        seen[c.name] = n
+        names.append(c.name if n == 1 else f"{c.name}_{n}")
+    return names
+
+
 def _fmt(v):
     return "nan" if v is None or not np.isfinite(v) else f"{v:.6e}"
 
@@ -27,29 +37,31 @@ def ascii_table(result, header_lines=()) -> str:
         f"# y: {result.ylabel}",
         "# series (token = legend label):",
     ]
-    lines += [f"#   {c.name} = {c.label}" for c in result.curves]
+    names = series_names(result.curves)
+    lines += [f"#   {n} = {c.label}" for n, c in zip(names, result.curves)]
     lines.append("# " + " ".join(COLUMNS))
-    for c in result.curves:
+    for name, c in zip(names, result.curves):
         for i in range(len(c.x)):
             if not np.isfinite(c.y[i]):
                 continue
             lo, hi = (c.xlo[i], c.xhi[i]) if c.is_binned else (np.nan, np.nan)
-            lines.append(f"{c.name} {_fmt(c.x[i])} {_fmt(lo)} {_fmt(hi)} {_fmt(c.y[i])}")
+            lines.append(f"{name} {_fmt(c.x[i])} {_fmt(lo)} {_fmt(hi)} {_fmt(c.y[i])}")
     return "\n".join(lines) + "\n"
 
 
 def plot_snippet(result, data_file) -> str:
     """Python code that reads ``data_file`` and plots the figure again with matplotlib."""
-    series = {c.name: c.label for c in result.curves}
-    binned = {c.name: c.is_binned for c in result.curves}
+    names = series_names(result.curves)
+    series = {n: c.label for n, c in zip(names, result.curves)}
+    binned = {n: c.is_binned for n, c in zip(names, result.curves)}
     hline_code = ("" if result.hline is None
                   else f'ax.axhline({result.hline!r}, color="gray", ls="--", lw=1)\n        ')
     return dedent(f'''\
         import matplotlib.pyplot as plt
         import numpy as np
 
-        data = np.genfromtxt({data_file!r}, names=["series", "x", "xlo", "xhi", "y"],
-                             dtype=None, encoding="utf-8")
+        columns = [("series", "U80"), ("x", float), ("xlo", float), ("xhi", float), ("y", float)]
+        data = np.genfromtxt({data_file!r}, dtype=columns, encoding="utf-8")
         labels = {series!r}
         binned = {binned!r}
 

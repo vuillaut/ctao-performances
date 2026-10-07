@@ -262,6 +262,11 @@ def sensitivity_validation(ctx: Context):
         ratios = []
         for k, (label, curve) in enumerate(officials):
             curve = ctx.mask(site.key, curve)
+            if not (curve.is_binned and len(curve.y) == len(ours.y)
+                    and np.allclose(curve.xlo, ours.xlo, rtol=1e-3)
+                    and np.allclose(curve.xhi, ours.xhi, rtol=1e-3)):
+                log.warning("%s: no ratio to %s, its energy bins differ from ours", site.key, label)
+                continue
             ratio = Curve(ours.x, ours.y / curve.y, ours.xlo, ours.xhi, f"gammapy / {label}").positive()
             draw_curve(ax, ratio, k + 1)
             ratios.append(ratio)
@@ -539,8 +544,8 @@ def _write(result: FigureResult, release: Release, source: str, out_dir: Path) -
         "Data: CTAO instrument response functions, CC BY 4.0. Not an official CTAO product "
         "unless the source says official.",
     ]
-    stem.with_suffix(".dat").write_text(ascii_table(result, header))
-    stem.with_suffix(".py").write_text(plot_snippet(result, f"{result.id}.dat"))
+    stem.with_suffix(".dat").write_text(ascii_table(result, header), encoding="utf-8")
+    stem.with_suffix(".py").write_text(plot_snippet(result, f"{result.id}.dat"), encoding="utf-8")
     return {
         "id": result.id,
         "title": result.title,

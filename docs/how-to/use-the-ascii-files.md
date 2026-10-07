@@ -32,13 +32,14 @@ left out. Floats are written with 7 significant digits.
 
 ```python
 import numpy as np
-d = np.genfromtxt("sensitivity-north-south.dat",
-                  names=["series", "x", "xlo", "xhi", "y"], dtype=None, encoding="utf-8")
+columns = [("series", "U80"), ("x", float), ("xlo", float), ("xhi", float), ("y", float)]
+d = np.genfromtxt("sensitivity-north-south.dat", dtype=columns, encoding="utf-8")
 south = d[d["series"] == "CTAO_Southern_Array"]
 ```
 
-Give the column names explicitly: numpy cannot take them from the commented header line when
-other comment lines come before the data. With pandas:
+Give the column names and types explicitly: numpy cannot take them from the commented header line
+when other comment lines come before the data, and it would read a series named `50` as a number.
+Two curves whose labels give the same token get `_2`, `_3`... added, so the tokens stay unique. With pandas:
 
 ```python
 import pandas as pd

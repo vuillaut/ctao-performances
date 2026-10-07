@@ -134,3 +134,26 @@ def test_prod6_root_angular_resolution_at_1tev():
     curve = src.angular_resolution("South")
     i = int(np.argmin(np.abs(curve.x - 1.0)))
     assert 0.04 < curve.y[i] < 0.06
+
+
+def test_fetch_root_keeps_bundle_when_nothing_matches(tmp_path):
+    import io
+    import tarfile
+    import zipfile
+
+    from ctao_perf.download import fetch_root
+
+    release = load_release("prod6-v1.0")
+    folder = tmp_path / release.name
+    folder.mkdir()
+    tar_bytes = io.BytesIO()
+    with tarfile.open(fileobj=tar_bytes, mode="w:gz") as tf:
+        info = tarfile.TarInfo("unrelated.root")
+        info.size = 0
+        tf.addfile(info, io.BytesIO())
+    with zipfile.ZipFile(folder / release.zenodo_root_file, "w") as zf:
+        zf.writestr("bundle/root/CTAO-Performance-x.ROOT.tar.gz", tar_bytes.getvalue())
+    with pytest.raises(FileNotFoundError, match="none of the"):
+        fetch_root(release, tmp_path)
+    assert (folder / release.zenodo_root_file).exists()      # kept, so a later run can retry
+    assert not (folder / ".root_unpacked").exists()          # no completion marker

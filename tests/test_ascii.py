@@ -41,3 +41,23 @@ def test_snippet_reads_the_file_it_describes(tmp_path, monkeypatch):
     assert len(ax.get_legend().get_texts()) == 2
     assert ax.get_xscale() == "log" and ax.get_ylabel() == "Flux [erg cm-2 s-1]"
     assert len(ax.lines) >= 2 and "axhline" in code  # data line(s) and the reference line
+
+
+def test_series_tokens_stay_unique_and_text(tmp_path, monkeypatch):
+    """Labels that collapse to the same token, or to a number, must still plot correctly."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    edges = np.array([1.0, 2.0, 4.0])
+    curves = [Curve.binned(edges, [1.0, 2.0], "50 h"), Curve.binned(edges, [3.0, 4.0], "50 h"),
+              Curve.binned(edges, [5.0, 6.0], "50")]
+    result = FigureResult("dup", "Duplicates", "", None, curves, "E [TeV]", "y", yscale="linear")
+    text = ascii_table(result)
+    assert "#   50_h = 50 h" in text and "#   50_h_2 = 50 h" in text and "#   50 = 50" in text
+    (tmp_path / "dup.dat").write_text(text)
+    code = plot_snippet(result, "dup.dat").replace("plt.show()", "")
+    monkeypatch.chdir(tmp_path)
+    ns = {}
+    exec(compile(code, "snippet", "exec"), ns)
+    ys = sorted(float(l.get_ydata()[0]) for l in ns["ax"].lines if len(l.get_ydata()) == 2)
+    assert ys == [1.0, 3.0, 5.0]  # each series got only its own rows

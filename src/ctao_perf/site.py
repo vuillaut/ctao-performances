@@ -126,7 +126,7 @@ def _group_by_id(manifest):
 
 
 def _variant_html(variant, release_out: Path):
-    snippet = (release_out / "figures" / variant["script"]).read_text()
+    snippet = (release_out / "figures" / variant["script"]).read_text(encoding="utf-8")
     return f"""<figure><img src="figures/{variant['file']}" alt="{html.escape(variant['title'])}" loading="lazy">
 <figcaption><strong>{SOURCE_CAPTIONS[variant['source']]}.</strong> {html.escape(variant['caption'])}</figcaption>
 <p class="dl"><a href="figures/{variant['data']}" download>data points (.dat)</a> ·
@@ -135,7 +135,8 @@ def _variant_html(variant, release_out: Path):
 </figure>"""
 
 
-def build_release_page(release: Release, manifest, data_dir, release_out: Path):
+def build_release_page(release: Release, manifest, data_dir, release_out: Path, docs=True):
+    """Write the page of one release; ``docs=False`` omits the links to the documentation."""
     ref_dir = release_out / "official"
     ref_dir.mkdir(parents=True, exist_ok=True)
     sections, toc = [], []
@@ -156,8 +157,11 @@ def build_release_page(release: Release, manifest, data_dir, release_out: Path):
   <div class="pair n{len(panels)}">{''.join(panels)}</div>
 </section>""")
 
+    docs_link = ' <a href="../docs/index.html">Documentation</a>' if docs else ""
+    docs_details = ('<a href="../docs/explanation/differences-from-official.html">Details</a> · '
+                    '<a href="../docs/data/index.html">about the data</a>. ' if docs else "")
     body = f"""
-<nav class="top"><a href="../index.html">All releases</a> <a href="../docs/index.html">Documentation</a></nav>
+<nav class="top"><a href="../index.html">All releases</a>{docs_link}</nav>
 <header>
   <h1>{html.escape(release.title)}</h1>
   <p class="muted">{html.escape(release.description)}</p>
@@ -173,16 +177,15 @@ from the ROOT files</strong> (same histograms as CTAO's figures, replotted here)
 <strong>official PNG</strong> from the Zenodo archive. The gammapy curves use a simpler analysis
 than CTAO's (cuts optimised per energy bin, full PSF), so expect differences of tens of percent,
 mostly near the energy threshold and at the highest energies.
-<a href="../docs/explanation/differences-from-official.html">Details</a> ·
-<a href="../docs/data/index.html">about the data</a>. Each curve can be downloaded as an ASCII file.</div>
+{docs_details}Each curve can be downloaded as an ASCII file.</div>
 <ul class="toc">{''.join(toc)}</ul>
 {''.join(sections)}
 """
-    (release_out / "index.html").write_text(_page(release.title, body, depth=1))
-    (release_out / "manifest.json").write_text(json.dumps(manifest, indent=2))
+    (release_out / "index.html").write_text(_page(release.title, body, depth=1), encoding="utf-8")
+    (release_out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
-def build_index(entries, out_dir: Path):
+def build_index(entries, out_dir: Path, docs=True):
     cards = []
     for release, manifest in entries:
         thumb = next((m["file"] for m in manifest if m["id"] == "sensitivity-north-south"),
@@ -195,9 +198,9 @@ def build_index(entries, out_dir: Path):
   <p class="muted">{html.escape(release.description)}</p>
   <p class="muted">{len(manifest)} figures · doi:{release.doi}</p>
 </a>""")
+    docs_nav = '<nav class="top"><a href="docs/index.html">Documentation</a></nav>\n' if docs else ""
     body = f"""
-<nav class="top"><a href="docs/index.html">Documentation</a></nav>
-<header>
+{docs_nav}<header>
   <h1>CTAO performance</h1>
   <p class="muted">Performance figures of the Cherenkov Telescope Array Observatory,
   reproduced with <a href="https://gammapy.org">gammapy</a> from the instrument response
@@ -205,8 +208,8 @@ def build_index(entries, out_dir: Path):
 </header>
 <div class="releases">{''.join(cards)}</div>
 """
-    (out_dir / "index.html").write_text(_page("CTAO performance", body))
-    (out_dir / "style.css").write_text(CSS)
+    (out_dir / "index.html").write_text(_page("CTAO performance", body), encoding="utf-8")
+    (out_dir / "style.css").write_text(CSS, encoding="utf-8")
     (out_dir / ".nojekyll").write_text("")
 
 
@@ -215,18 +218,21 @@ def _md_links_to_html(text):
     return re.sub(r'href="([^"#:]+)\.md(#[^"]*)?"', r'href="\1.html\2"', text)
 
 
-def build_docs(docs_dir: Path, out_dir: Path):
-    """Render the Markdown documentation in ``docs_dir`` to ``out_dir/docs``."""
+def build_docs(docs_dir: Path, out_dir: Path) -> bool:
+    """Render the Markdown documentation in ``docs_dir`` to ``out_dir/docs``.
+
+    Returns False, with a warning, when there is no such folder.
+    """
     import markdown
 
     docs_dir = Path(docs_dir)
     if not docs_dir.is_dir():
-        log.warning("No documentation folder at %s, skipping", docs_dir)
-        return
+        log.warning("No documentation folder at %s: the site is built without documentation", docs_dir)
+        return False
     target = out_dir / "docs"
     for src in sorted(docs_dir.rglob("*.md")):
         rel = src.relative_to(docs_dir)
-        text = src.read_text()
+        text = src.read_text(encoding="utf-8")
         title = next((l[2:].strip() for l in text.splitlines() if l.startswith("# ")), rel.stem)
         content = markdown.markdown(text, extensions=["tables", "fenced_code", "toc", "attr_list"])
         depth = len(rel.parts)  # docs/ is one level below the site root
@@ -239,5 +245,6 @@ def build_docs(docs_dir: Path, out_dir: Path):
         body = f'{nav}<article class="doc">{_md_links_to_html(content)}</article>'
         dest = (target / rel).with_suffix(".html")
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(_page(f"{title} - ctao-perf", body, depth=depth))
+        dest.write_text(_page(f"{title} - ctao-perf", body, depth=depth), encoding="utf-8")
     log.info("Documentation written to %s", target)
+    return True

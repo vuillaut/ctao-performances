@@ -156,6 +156,9 @@ def fetch_root(release: Release, data_dir, force=False) -> Path:
                         tf.extract(member, out, filter="data")
                         found.add(name)
     missing = wanted - found
+    if not found:  # keep the bundle and no marker, so that a later run can retry
+        raise FileNotFoundError(f"{release.name}: none of the {len(wanted)} expected ROOT files "
+                                f"found in {bundle}")
     if missing:
         log.warning("%s: %d expected ROOT files not in the bundle, e.g. %s",
                     release.name, len(missing), sorted(missing)[0])

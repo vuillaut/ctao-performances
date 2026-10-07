@@ -48,8 +48,8 @@ data/prod6-v1.0/
 ctao-perf figures prod6-v1.0 -o figures
 ```
 
-PNG files land in `figures/prod6-v1.0/`. Start with
-`sensitivity-north-south.png`, the differential sensitivity of both arrays for
+PNG files land in `figures/prod6-v1.0/gammapy/`. Start with
+`gammapy/sensitivity-north-south.png`, the differential sensitivity of both arrays for
 50 h. The run takes a few minutes: the sensitivity is computed in each energy
 bin for each curve.
 
