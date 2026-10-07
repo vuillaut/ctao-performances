@@ -54,13 +54,14 @@ def plot_snippet(result, data_file) -> str:
     names = series_names(result.curves)
     series = {n: c.label for n, c in zip(names, result.curves)}
     binned = {n: c.is_binned for n, c in zip(names, result.curves)}
+    width = max([1, *map(len, names)])  # the series field must hold the longest token
     hline_code = ("" if result.hline is None
                   else f'ax.axhline({result.hline!r}, color="gray", ls="--", lw=1)\n        ')
     return dedent(f'''\
         import matplotlib.pyplot as plt
         import numpy as np
 
-        columns = [("series", "U80"), ("x", float), ("xlo", float), ("xhi", float), ("y", float)]
+        columns = [("series", "U{width}"), ("x", float), ("xlo", float), ("xhi", float), ("y", float)]
         data = np.genfromtxt({data_file!r}, dtype=columns, encoding="utf-8")
         labels = {series!r}
         binned = {binned!r}
