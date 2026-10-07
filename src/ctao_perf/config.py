@@ -35,6 +35,8 @@ class SensitivityCriteria:
     bkg_syst_fraction: float = 0.05
     alpha: float = 0.2
     containment: float = 0.68
+    # power-law index used to convert the excess to a flux (Crab, as in the official curves)
+    spectral_index: float = 2.62
 
 
 @dataclass

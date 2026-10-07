@@ -17,6 +17,7 @@ from gammapy.datasets import SpectrumDataset, SpectrumDatasetOnOff
 from gammapy.estimators import SensitivityEstimator
 from gammapy.makers import SpectrumDatasetMaker
 from gammapy.maps import MapAxis, RegionGeom
+from gammapy.modeling.models import PowerLawSpectralModel
 from regions import CircleSkyRegion
 
 from .config import SensitivityCriteria
@@ -54,17 +55,18 @@ def sensitivity(
     """Differential point-source sensitivity in E^2 dN/dE (erg cm-2 s-1).
 
     The on region is the ``criteria.containment`` PSF containment radius in
-    each energy bin. Returns ``(energy_axis, e2dnde, table)``; bins where the
-    sensitivity cannot be computed are NaN.
+    each energy bin. The excess is converted to a flux with a power law of index
+    ``criteria.spectral_index``, and E^2 dN/dE is given at the arithmetic mean of
+    the bin edges, as in the official curves. Returns ``(energy_axis, e2dnde, table)``;
+    bins where the sensitivity cannot be computed are NaN.
     """
     criteria = criteria or SensitivityCriteria()
     energy_axis = energy_axis or log_energy_axis()
     livetime = u.Quantity(livetime, "s")
     pointing = SkyCoord(0, 0, unit="deg", frame="icrs")
     source = pointing.directional_offset_by(0 * u.deg, offset)
-    ref_radius = 0.1 * u.deg
 
-    geom = RegionGeom.create(CircleSkyRegion(source, ref_radius), axes=[energy_axis])
+    geom = RegionGeom.create(CircleSkyRegion(source, 0.1 * u.deg), axes=[energy_axis])
     empty = SpectrumDataset.create(geom=geom, energy_axis_true=TRUE_ENERGY_AXIS)
     obs = Observation.create(
         pointing=FixedPointingInfo(fixed_icrs=pointing),
@@ -74,28 +76,48 @@ def sensitivity(
     )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        maker = SpectrumDatasetMaker(selection=["exposure", "edisp", "background"])
+        maker = SpectrumDatasetMaker(selection=["exposure", "edisp"])
         dataset = maker.run(empty, obs)
 
         dataset.exposure *= criteria.containment
         radii = obs.psf.containment_radius(
             energy_true=energy_axis.center, offset=offset, fraction=criteria.containment
         )
-        factor = (1 - np.cos(radii)) / (1 - np.cos(ref_radius))
-        dataset.background *= factor.value.reshape((-1, 1, 1))
+        dataset.background = dataset.counts.copy(
+            data=_background_counts(irfs, energy_axis, offset, radii, livetime).reshape((-1, 1, 1))
+        )
 
         on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
             dataset=dataset, acceptance=1, acceptance_off=1 / criteria.alpha
         )
+        index = criteria.spectral_index
         estimator = SensitivityEstimator(
+            spectral_model=PowerLawSpectralModel(index=index, amplitude="1 cm-2 s-1 TeV-1"),
             n_sigma=criteria.n_sigma,
             gamma_min=criteria.gamma_min,
             bkg_syst_fraction=criteria.bkg_syst_fraction,
         )
         table = estimator.run(on_off)
+    # gammapy gives E^2 dN/dE at the bin centre; move it to the mean of the bin edges
+    edges = energy_axis.edges
+    shift = (0.5 * (edges[:-1] + edges[1:]) / energy_axis.center).to_value("") ** (2 - index)
+    table["e2dnde"] = table["e2dnde"].quantity * shift
     e2dnde = np.array(table["e2dnde"].quantity.to_value("erg cm-2 s-1"), dtype=float)
     e2dnde[~np.isfinite(e2dnde) | (e2dnde <= 0)] = np.nan
     return energy_axis, e2dnde, table
+
+
+def _background_counts(irfs, energy_axis, offset, radii, livetime):
+    """Background counts in circles of ``radii``, from the ``BKG`` value at each bin centre.
+
+    gammapy's dataset maker integrates the rate over the bin by log-log interpolation between
+    bin centres, which underestimates it near the threshold where the rate jumps by a factor
+    of ten from one bin to the next. The official curves use the tabulated value.
+    """
+    rate = irfs["bkg"].evaluate(energy=energy_axis.center, fov_lon=u.Quantity(offset),
+                                fov_lat=0 * u.deg)
+    solid_angle = 2 * np.pi * (1 - np.cos(radii)) * u.sr
+    return (rate * energy_axis.bin_width * solid_angle * livetime).to_value("")
 
 
 def angular_resolution(irfs, energy, offset=DEFAULT_OFFSET, fraction=0.68):

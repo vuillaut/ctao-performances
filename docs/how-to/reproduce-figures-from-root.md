@@ -35,8 +35,9 @@ The figures made from ROOT, with the histograms they read:
 | `effective-area-direction-cuts-<site>` | `EffectiveArea` (ROOT only) |
 | `background-rate` | `BGRatePerSqDeg` |
 
-There is no ROOT counterpart for `sensitivity-time-<site>`, `sensitivity-validation-<site>` and
-`sensitivity-ratio-<site>`, which need the gammapy calculation.
+There is no ROOT counterpart for `sensitivity-time-<site>`, `sensitivity-validation[-onaxis]-<site>`
+and `sensitivity-ratio[-onaxis]-<site>`, which need the gammapy calculation. The validation figures
+read `DiffSens_offaxis` (offset bin of the source) and `DiffSens` (on axis) from the ROOT files.
 
 ## From Python
 

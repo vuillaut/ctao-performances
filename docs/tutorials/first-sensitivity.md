@@ -78,7 +78,7 @@ _, ours, _ = perf.sensitivity(irfs, 50 * u.h, "ctao_south", energy_axis=same_axi
 ratio = ours / official[0]
 ```
 
-Expect ratios between 0.7 and 1.4 from 0.1 to 50 TeV (this is what
+Expect ratios between 0.9 and 1.3 from 0.1 to 50 TeV, mostly 1.0–1.1 (this is what
 `tests/test_performance.py` asserts). [Why they differ](../explanation/differences-from-official.md).
 
 Prod5 files have no such HDU: `provided_sensitivity` returns `None`.

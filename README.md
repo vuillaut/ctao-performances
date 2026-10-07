@@ -92,15 +92,20 @@ and plot script automatically.
 The sensitivity is computed with `gammapy.estimators.SensitivityEstimator`: on
 region set to the 68% PSF containment radius, off/on exposure ratio 5,
 5σ detection, at least 10 excess events and S/B ≥ 5%, in five bins per decade
-of reconstructed energy. Energy resolution is the 68% half-width of
+of reconstructed energy, for an E^-2.62 spectrum. Energy resolution is the 68% half-width of
 (E_R − E_T)/E_T, weighted by the effective area and an E^-2.62 spectrum.
 
 The official figures are produced from the full simulations with cuts
 optimised per energy bin. The official curves are read from the ROOT
-files and shown next to the gammapy ones. Over 0.1–50 TeV our sensitivity is
-about 10 % above the official one (Prod5 and Prod6); it is off by more near the energy threshold
-and above 50 TeV. Each curve, with the approximations and the measured gap, is
-described in `docs/explanation/differences-from-official.md`.
+files and shown next to the gammapy ones. Over 0.1–50 TeV the gammapy sensitivity is
+5–8 % above the official one (Prod5 and Prod6). Two causes remain, and neither can be removed
+with the FITS files alone: the official curve is for a source on the camera axis while the
+FITS IRFs are for 0–1°, and the on region is the 68 % PSF radius instead of the optimised
+direction cut, which the FITS files do not contain. The second one gives larger gaps above
+10 TeV and below 0.04 TeV. The validation figures compare the gammapy curve with the official
+sensitivity both for the source offset bin (0–1°) and on axis. Each curve,
+with the causes and the measured gap, is described in
+`docs/explanation/differences-from-official.md`.
 
 Known data issues handled in `irfs.py`: empty energy-dispersion columns at
 the highest energies (e.g. prod5 North 50 h) are filled with the last

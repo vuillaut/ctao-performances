@@ -59,7 +59,7 @@ def test_prod6_sensitivity_matches_tabulated():
         )
         sel = (axis.center > 0.1 * u.TeV) & (axis.center < 50 * u.TeV)
         ratio = ours[sel] / table[0][sel]
-        assert np.all((ratio > 0.7) & (ratio < 1.4)), (site, ratio)
+        assert np.all((ratio > 0.9) & (ratio < 1.3)), (site, ratio)
 
 
 @pytest.mark.data
