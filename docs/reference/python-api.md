@@ -16,7 +16,7 @@ Docstrings in the source carry the details.
 
 ## `ctao_perf.config`
 
-`SensitivityCriteria(n_sigma=5, gamma_min=10, bkg_syst_fraction=0.05, alpha=0.2, containment=0.68)`.
+`SensitivityCriteria(n_sigma=5, gamma_min=10, bkg_syst_fraction=0.05, alpha=0.2, containment=0.68, spectral_index=2.62)`.
 
 ## `ctao_perf.download`
 

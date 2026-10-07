@@ -105,10 +105,11 @@ def sensitivity(
     table["e2dnde"] = table["e2dnde"].quantity * shift
     table["e_ref"] = e_mean.to(table["e_ref"].unit)
     table["e_ref"].description = "Arithmetic mean of the bin edges, where e2dnde is given"
-    e2dnde = np.array(table["e2dnde"].quantity.to_value("erg cm-2 s-1"), dtype=float)
     # no PSF, no on region, so no sensitivity
     no_psf = ~psf_filled(irfs["psf"], energy_axis.center, offset)
-    e2dnde[~np.isfinite(e2dnde) | (e2dnde <= 0) | no_psf] = np.nan
+    table["e2dnde"][no_psf] = np.nan
+    e2dnde = np.array(table["e2dnde"].quantity.to_value("erg cm-2 s-1"), dtype=float)
+    e2dnde[~np.isfinite(e2dnde) | (e2dnde <= 0)] = np.nan
     return energy_axis, e2dnde, table
 
 
