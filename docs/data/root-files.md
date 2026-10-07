@@ -85,8 +85,8 @@ with energies in TeV.
   `AngRes...` and the others without suffix are computed from gamma rays simulated as a point source on
   the camera axis (`gamma_onSource` in `IRFLog`). The FITS IRFs equal bin 0 (0–1°) of the `*_offaxis`
   histograms, computed from diffuse gamma rays: `EFFAREA` equals `EffectiveAreaEtrueNoTheta2cut_offaxis`
-  bin 0, and the FITS `DIFFERENTIAL SENSITIVITY` equals `DiffSens_offaxis` bin 0 (checked on the Prod6
-  and Prod5 50 h files, both sites). Between the two, the sensitivity differs by up to 9 % per bin
+  bin 0 (checked on the Prod6 and Prod5 50 h files, both sites), and the FITS `DIFFERENTIAL
+  SENSITIVITY` equals `DiffSens_offaxis` bin 0 (Prod6 50 h files, both sites; Prod5 has no such HDU). Between the two, the sensitivity differs by up to 9 % per bin
   (3–4 % in the median for Prod6) and the effective area by 2–5 % in the median. See
   [Differences from the official figures](../explanation/differences-from-official.md#1-position-of-the-source).
 - **`EffectiveArea` has a direction cut, the FITS does not.** All FITS IRFs are `FULL-ENCLOSURE`.

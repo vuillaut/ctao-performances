@@ -100,10 +100,17 @@ def sensitivity(
         table = estimator.run(on_off)
     # gammapy gives E^2 dN/dE at the bin centre; move it to the mean of the bin edges
     edges = energy_axis.edges
-    shift = (0.5 * (edges[:-1] + edges[1:]) / energy_axis.center).to_value("") ** (2 - index)
+    e_mean = 0.5 * (edges[:-1] + edges[1:])
+    shift = (e_mean / energy_axis.center).to_value("") ** (2 - index)
     table["e2dnde"] = table["e2dnde"].quantity * shift
+    table["e_ref"] = e_mean.to(table["e_ref"].unit)
+    table["e_ref"].description = "Arithmetic mean of the bin edges, where e2dnde is given"
     e2dnde = np.array(table["e2dnde"].quantity.to_value("erg cm-2 s-1"), dtype=float)
-    e2dnde[~np.isfinite(e2dnde) | (e2dnde <= 0)] = np.nan
+    # an empty PSF (all parameters 0) has no on region, so no sensitivity; gammapy still
+    # returns a radius of half its grid step there, so test the containment instead
+    empty_psf = obs.psf.containment(energy_true=energy_axis.center, offset=offset,
+                                    rad=2 * u.deg) < 0.5
+    e2dnde[~np.isfinite(e2dnde) | (e2dnde <= 0) | empty_psf] = np.nan
     return energy_axis, e2dnde, table
 
 

@@ -175,7 +175,7 @@ the FITS IRFs (on region = 68% PSF containment, off/on ratio
 excess events, S/B ≥ {release.sensitivity.bkg_syst_fraction:g}); the <strong>official curves read
 from the ROOT files</strong> (same histograms as CTAO's figures, replotted here); and the
 <strong>official PNG</strong> from the Zenodo archive. The gammapy curves use the FITS files only:
-they describe a source 0–1° from the camera centre (the official curves are on axis), and the on
+they describe a source {release.offset_bin[0]:g}–{release.offset_bin[1]:g}° from the camera centre (the official curves are on axis), and the on
 region is the 68% PSF containment radius instead of CTAO's optimised direction cut, which the FITS
 files do not contain. Expect the sensitivity to differ by 2–8% between 0.1 and 10 TeV, and by
 10–50% above 10 TeV and below 0.04 TeV.

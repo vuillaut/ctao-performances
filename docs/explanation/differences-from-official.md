@@ -82,8 +82,9 @@ The same file holds every quantity also as a function of the source offset, in s
 (`DiffSens_offaxis`, `EffectiveArea..._offaxis`, `ThetaCut_offaxis`, ...). These are computed from
 diffuse gamma rays. Bin 0 (0–1°) of these histograms is identical, to the precision of the file, to
 the FITS IRFs: `EFFAREA` in its first offset bin equals `EffectiveAreaEtrueNoTheta2cut_offaxis` bin 0,
-and the FITS `DIFFERENTIAL SENSITIVITY` in its first offset bin equals `DiffSens_offaxis` bin 0
-(checked on the Prod6 and Prod5 files, South and North, 50 h). **The FITS files describe a source
+and the FITS `DIFFERENTIAL SENSITIVITY` in its first offset bin equals `DiffSens_offaxis` bin 0.
+The effective area was checked on the Prod6 and Prod5 files, the sensitivity on the Prod6 files
+only (Prod5 has no sensitivity HDU); South and North, 50 h. **The FITS files describe a source
 somewhere between 0° and 1° from the camera centre, while `DiffSens` is for a source on the axis.**
 
 ### The gammapy calculation
@@ -213,8 +214,8 @@ YAML).
 
 *Not corrected.* In the Prod6 North file the PSF of the 0–1° offset bin is empty above 79 TeV
 (`SIGMA_1` and `SCALE` are 0), and so is `AngResEtrue_offaxis` bin 0. The gammapy containment radius
-is then 0 and the sensitivity is not defined (ratios of 2.1 and 4.3 in the last two bins). The on-axis
-`DiffSens` has values there.
+is then 0, and `performance.sensitivity` returns NaN for these bins (without this, the 10-event
+criterion would give a finite but meaningless value). The on-axis `DiffSens` has values there.
 
 ### Remaining approximations
 

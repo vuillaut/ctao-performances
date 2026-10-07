@@ -297,11 +297,12 @@ def sensitivity_validation(ctx: Context):
             )
         official = _official_on_axis(ctx, site)
         if official is not None:
+            lo, hi = ctx.release.offset_bin
             yield from _validation(
                 ctx, site, ours, official, "-onaxis", "on the camera axis",
                 "This is the curve of the official CTAO figures. It is for a source on the camera "
-                "axis, while the FITS IRFs are for a source 0–1° off axis, where the sensitivity is "
-                "a few percent worse.",
+                f"axis, while the FITS IRFs are for a source {lo:g}–{hi:g}° off axis"
+                + (", where the sensitivity is a few percent worse." if lo == 0 else "."),
             )
 
 

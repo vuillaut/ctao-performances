@@ -7,6 +7,7 @@ new YAML file: the download, IRF lookup, computations and figures are generic.
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass, field
 from importlib import resources
@@ -68,6 +69,12 @@ class Release:
     # pattern with the extension replaced)
     zenodo_root_file: str | None = None
     root_filename: str | None = None
+
+    @property
+    def offset_bin(self):
+        """Bounds in degrees of the 1°-wide IRF offset bin that contains the source offset."""
+        lo = float(math.floor(self.offset.to_value("deg")))
+        return lo, lo + 1
 
     @property
     def zenodo_url(self):

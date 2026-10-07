@@ -109,8 +109,8 @@ the simulation did not populate are all zero (see below).
 ## Background
 
 `BKG` is the post-cut cosmic-ray rate, absolute, per MeV and per steradian
-(although energies are in TeV). `ctao-perf` multiplies by the bin width to get Hz
-deg⁻².
+(although energies are in TeV). `ctao-perf` multiplies it by the bin width in MeV
+(the TeV width × 10⁶) to get Hz sr⁻¹, then by (π/180)² sr deg⁻² to get Hz deg⁻².
 
 ## Differential sensitivity (Prod6 only)
 
