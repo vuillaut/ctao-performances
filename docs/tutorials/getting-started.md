@@ -59,10 +59,10 @@ To try something faster, restrict to one figure:
 ctao-perf figures prod6-v1.0 --only angular_resolution
 ```
 
-## 5. Add the official curves (optional, Prod6)
+## 5. Add the official curves (optional)
 
 The ROOT files of the release hold the curves behind the official figures. They are in a 1.1 GB
-bundle, of which about 205 MB are kept:
+bundle (0.9 GB for Prod5), of which about 205 MB (137 MB for Prod5) are kept:
 
 ```bash
 ctao-perf download --root prod6-v1.0

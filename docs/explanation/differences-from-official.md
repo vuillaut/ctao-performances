@@ -2,8 +2,8 @@
 
 Our gammapy curves are not the official ones. This page says, curve by curve, what is computed,
 what is approximated and how large the gap is. The gaps are measured against the official curves in
-the ROOT files, for Prod6 v1.0 (South and North, 50 h, zenith 20°, `AverageAz`, dark sky). Prod5 has
-no ROOT comparison yet.
+the ROOT files, for Prod6 v1.0 and Prod5 v0.1 (South and North, 50 h, zenith 20°, `AverageAz`, dark sky
+for Prod6). The tables below are for Prod6; Prod5 is [at the end of the next section](#prod5-v01).
 
 Ratios are *gammapy / official*, over 0.1–50 TeV, the range where the analysis has good statistics
 ([ratio figures](../reference/figures.md)). "Median" is the median over the energy bins.
@@ -19,6 +19,34 @@ Ratios are *gammapy / official*, over 0.1–50 TeV, the range where the analysis
 A ratio above 1 on the sensitivity means ours is worse (a larger flux is needed). Our sensitivity is
 about 10 % higher than the official one in the middle of the range, never lower there. This is
 the figure that matters most; the details follow.
+
+## Prod5 v0.1
+
+Same measurement, same code, on the Prod5 files (energy resolution on reconstructed energy, as the
+release YAML says). Ratios *gammapy / official* over 0.1–50 TeV, median (range), North / South:
+
+| Curve | North | South |
+|---|---|---|
+| Differential sensitivity | 1.11 (1.00–1.24) | 1.09 (0.99–1.31) |
+| Differential sensitivity, 50–200 TeV | 1.44 (1.16–2.74) | 1.39 (1.28–1.56) |
+| Angular resolution, 0.02–60 TeV | 1.00 (0.97–1.07) | 0.98 (0.93–1.01) |
+| Energy resolution | 1.08 (0.99–1.13) | 1.03 (0.97–1.14) |
+| Background rate | 1.00 (0.93–1.00) | 1.00 (1.00–1.02) |
+| Effective area (no direction cut) | 0.99 (0.91–1.22) | 0.99 (0.92–1.17) |
+
+Same picture as Prod6: our sensitivity is about 10 % above the official one in the middle of the range,
+and the angular resolution, the background and the effective area agree to a few percent. Differences:
+
+- Above 50 TeV our sensitivity is worse than for Prod6 (up to a factor 2.7 for North in one bin).
+- Near the threshold the ratio is again far from 1: 0.29 and 0.73 in the bins centred at 0.025 and 0.04 TeV
+  for North, and 0.57 in the 0.063 TeV bin for South (its first bin shown). Cause not investigated.
+- The angular resolution holds up to the highest energies for South, and to 0.79 at 158 TeV for North,
+  better than for Prod6 North.
+- The official Prod5 energy-resolution figure is a smooth curve; the ROOT file has one value per bin, so
+  both our curves are binned. The ROOT values agree with the smooth curve (about 0.07 at 1 TeV and 0.06 at
+  5 TeV for South).
+- The Prod5 FITS files have no `DIFFERENTIAL SENSITIVITY` HDU: the ROOT file is the only official
+  sensitivity to compare with, and the validation figure has one official curve instead of two.
 
 ## Differential sensitivity
 

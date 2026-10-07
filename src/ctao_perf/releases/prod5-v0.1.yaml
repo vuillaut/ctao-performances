@@ -8,6 +8,7 @@ doi: 10.5281/zenodo.5499840
 zenodo:
   record: 5499840
   file: cta-prod5-zenodo-fitsonly-v0.1.zip
+  root_file: cta-prod5-zenodo-v0.1.zip   # bundle with the ROOT files (~0.9 GB)
 
 # Name of the individual IRF files inside the tarballs.
 filename: "Prod5-{site}-{zenith}deg-{azimuth}-{telescopes}.{duration}s-v0.1.fits.gz"

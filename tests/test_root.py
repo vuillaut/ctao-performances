@@ -71,9 +71,11 @@ def test_root_filename_defaults_to_fits_pattern():
         "Prod5-South-20deg-AverageAz-14MSTs37SSTs.18000s-v0.1.root")
 
 
-def test_prod5_has_no_root_bundle(tmp_path):
-    release = load_release("prod5-v0.1")
-    assert release.zenodo_root_file is None
+def test_release_without_root_bundle_is_unavailable(tmp_path):
+    """A release with no `zenodo.root_file` never uses ROOT files, even if some are on disk."""
+    from dataclasses import replace
+
+    release = replace(load_release("prod5-v0.1"), zenodo_root_file=None)
     (tmp_path / "prod5-v0.1" / "root").mkdir(parents=True)
     (tmp_path / "prod5-v0.1" / "root" / "x.root").write_bytes(b"")
     assert not RootLibrary(release, tmp_path).available()
@@ -102,6 +104,23 @@ def test_prod6_gammapy_vs_root_sensitivity():
         sel = (ours.x > 0.1) & (ours.x < 50)
         ratio = ours.y[sel] / official.y[sel]
         assert np.all((ratio > 0.9) & (ratio < 1.4)), (site, ratio)
+
+
+@pytest.mark.data
+def test_prod5_gammapy_vs_root_sensitivity():
+    from ctao_perf.sources import GammapySource, RootSource
+
+    release = load_release("prod5-v0.1")
+    root_src, gammapy_src = RootSource(release, Path("data")), GammapySource(release, Path("data"))
+    if not root_src.available():
+        pytest.skip("ROOT files not downloaded (`ctao-perf download --root prod5-v0.1`)")
+    for site in release.sites:
+        ours, official = gammapy_src.sensitivity(site), root_src.sensitivity(site)
+        sel = (ours.x > 0.1) & (ours.x < 50)
+        ratio = ours.y[sel] / official.y[sel]
+        assert np.all((ratio > 0.9) & (ratio < 1.4)), (site, ratio)
+    # the official Prod5 South 50 h minimum is ~0.93e-13 erg cm-2 s-1
+    assert 0.8e-13 < np.nanmin(root_src.sensitivity("South").y) < 1.1e-13
 
 
 @pytest.mark.data

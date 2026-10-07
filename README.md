@@ -3,7 +3,7 @@
 Reproduce the performance figures of the Cherenkov Telescope Array Observatory
 (CTAO) from the instrument response functions (IRFs) published on Zenodo, in two ways:
 recomputed with [gammapy](https://gammapy.org) from the FITS IRFs, and read from the
-official curves stored in the ROOT files (Prod6). Every figure comes with an ASCII file
+official curves stored in the ROOT files. Every figure comes with an ASCII file
 of its data points and a script to plot it.
 
 The figures are rebuilt by CI and published at
@@ -23,7 +23,7 @@ Supported releases:
 pip install -e .            # or: uv pip install -e .
 ctao-perf list              # bundled releases and figure producers
 ctao-perf download prod6-v1.0            # FITS IRFs
-ctao-perf download --root prod6-v1.0     # + official curves from the ROOT files (1.1 GB download)
+ctao-perf download --root prod6-v1.0     # + official curves from the ROOT files (~1 GB download)
 ctao-perf figures prod6-v1.0 -o figures  # figures/prod6-v1.0/{gammapy,root}/<id>.{png,dat,py}
 ctao-perf site              # download + figures + documentation + static website in ./public
 ```
@@ -96,9 +96,9 @@ of reconstructed energy. Energy resolution is the 68% half-width of
 (E_R − E_T)/E_T, weighted by the effective area and an E^-2.62 spectrum.
 
 The official figures are produced from the full simulations with cuts
-optimised per energy bin. For Prod6 the official curves are read from the ROOT
+optimised per energy bin. The official curves are read from the ROOT
 files and shown next to the gammapy ones. Over 0.1–50 TeV our sensitivity is
-about 10 % above the official one; it is off by more near the energy threshold
+about 10 % above the official one (Prod5 and Prod6); it is off by more near the energy threshold
 and above 50 TeV. Each curve, with the approximations and the measured gap, is
 described in `docs/explanation/differences-from-official.md`.
 

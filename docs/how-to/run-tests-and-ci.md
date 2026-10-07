@@ -5,7 +5,7 @@
 ```bash
 pip install -e ".[test]"
 pytest                          # config and unit tests only (data tests skip)
-ctao-perf download --root       # then the data tests run too (ROOT: Prod6 only)
+ctao-perf download --root       # then the data tests run too, ROOT ones included
 pytest -v
 ```
 
@@ -17,7 +17,7 @@ absent. They check that:
 - Prod5 South 50 h has its minimum sensitivity between 0.8 and 1.2 × 10⁻¹³ erg cm⁻² s⁻¹;
 - Prod6 sensitivity agrees with the tabulated one within a factor 0.7–1.4 from 0.1 to 50 TeV;
 - Prod6 South angular resolution at 1 TeV is between 0.045° and 0.06°;
-- the Prod6 gammapy sensitivity is 0.9–1.4 times the ROOT one from 0.1 to 50 TeV (`test_root.py`);
+- the gammapy sensitivity is 0.9–1.4 times the ROOT one from 0.1 to 50 TeV, for Prod5 and Prod6 (`test_root.py`);
 - the ROOT readers handle empty bins, direction-cut variants and missing files (synthetic ROOT files
   written with uproot), and every ASCII file works with the script that goes with it (`test_ascii.py`).
 

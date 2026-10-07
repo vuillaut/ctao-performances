@@ -24,8 +24,8 @@ figure producers.
 Downloads each release zip from Zenodo, verifies the MD5 reported by the
 Zenodo API, unpacks it and flattens every FITS file into
 `<data-dir>/<name>/irfs/`. Skipped when `<data-dir>/<name>/.unpacked` exists.
-`--force` downloads and unpacks again. `--root` also fetches the ROOT bundle (about 1.1 GB for Prod6),
-keeps the 32 files the figures need in `<data-dir>/<name>/root/` and deletes the zip; it is skipped
+`--force` downloads and unpacks again. `--root` also fetches the ROOT bundle (about 1.1 GB for Prod6, 0.9 GB for Prod5),
+keeps the files the figures need (32 for Prod6, 18 for Prod5) in `<data-dir>/<name>/root/` and deletes the zip; it is skipped
 for releases without a `zenodo.root_file`. See [ROOT files](../data/root-files.md).
 
 ## `ctao-perf figures [releases...] [-o DIR] [--only PRODUCER ...] [--sources {gammapy,root} ...]`
