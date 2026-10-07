@@ -7,6 +7,7 @@ new YAML file: the download, IRF lookup, computations and figures are generic.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from importlib import resources
 from pathlib import Path
@@ -61,6 +62,10 @@ class Release:
     reference_figures: dict[str, str] = field(default_factory=dict)
     description: str = ""
     source: Path | None = None
+    # Zenodo bundle with the ROOT files, and their naming pattern (defaults to the FITS
+    # pattern with the extension replaced)
+    zenodo_root_file: str | None = None
+    root_filename: str | None = None
 
     @property
     def zenodo_url(self):
@@ -73,8 +78,16 @@ class Release:
         return f"{seconds} s"
 
     def irf_filename(self, site, duration, zenith=None, azimuth=None, condition=None):
-        """File name of one IRF, following the release naming pattern."""
-        return self.filename.format(
+        """File name of one FITS IRF, following the release naming pattern."""
+        return self._format(self.filename, site, duration, zenith, azimuth, condition)
+
+    def root_irf_filename(self, site, duration, zenith=None, azimuth=None, condition=None):
+        """File name of the ROOT file holding the official curves for one IRF."""
+        pattern = self.root_filename or re.sub(r"\.fits(\.gz)?$", ".root", self.filename)
+        return self._format(pattern, site, duration, zenith, azimuth, condition)
+
+    def _format(self, pattern, site, duration, zenith, azimuth, condition):
+        return pattern.format(
             site=site,
             telescopes=self.sites[site].telescopes,
             zenith=self.zenith if zenith is None else zenith,
@@ -110,12 +123,14 @@ def load_release(path_or_name) -> Release:
         for key, s in cfg.pop("sites").items()
     }
     zenodo = cfg.pop("zenodo")
+    root_file = zenodo.get("root_file")
     sensitivity = SensitivityCriteria(**cfg.pop("sensitivity", {}))
     offset = _quantity(cfg.pop("offset_deg", 0.5), "deg")
     return Release(
         sites=sites,
         zenodo_record=zenodo["record"],
         zenodo_file=zenodo["file"],
+        zenodo_root_file=root_file,
         sensitivity=sensitivity,
         offset=offset,
         source=path,

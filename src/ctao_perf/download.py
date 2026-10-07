@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 ZENODO_API = "https://zenodo.org/api/records/{record}"
 DONE_MARKER = ".unpacked"
+ROOT_DONE_MARKER = ".root_unpacked"
 
 
 def zenodo_file_info(record, filename):
@@ -55,6 +56,11 @@ def release_dir(release: Release, data_dir) -> Path:
 
 def irf_dir(release: Release, data_dir) -> Path:
     return release_dir(release, data_dir) / "irfs"
+
+
+def root_dir(release: Release, data_dir) -> Path:
+    """ROOT files holding the official curves (see :func:`fetch_root`)."""
+    return release_dir(release, data_dir) / "root"
 
 
 def archive_dir(release: Release, data_dir) -> Path:
@@ -101,3 +107,62 @@ def fetch(release: Release, data_dir, force=False) -> Path:
     bundle.unlink()
     marker.write_text(f"{n}\n")
     return root
+
+
+def wanted_root_files(release: Release) -> set[str]:
+    """Names of the ROOT files the figures use: default azimuth and sky condition,
+    every site, zenith angle and optimisation time of the release."""
+    return {
+        release.root_irf_filename(site, duration, zenith=zenith)
+        for site in release.sites
+        for zenith in release.zeniths
+        for duration in release.durations.values()
+    }
+
+
+def fetch_root(release: Release, data_dir, force=False) -> Path:
+    """Download the Zenodo bundle with the ROOT files and keep the ones the figures need.
+
+    The bundle is about 1 GB; only :func:`wanted_root_files` are extracted, into
+    ``<data_dir>/<name>/root``. The tarballs are read straight from the zip.
+    """
+    if not release.zenodo_root_file:
+        raise ValueError(f"{release.name} has no `zenodo.root_file` in its YAML")
+    root = release_dir(release, data_dir)
+    out = root_dir(release, data_dir)
+    marker = root / ROOT_DONE_MARKER
+    if marker.exists() and not force:
+        log.info("%s ROOT files already available in %s", release.name, out)
+        return out
+
+    root.mkdir(parents=True, exist_ok=True)
+    bundle = root / release.zenodo_root_file
+    if not bundle.exists() or force:
+        url, checksum = zenodo_file_info(release.zenodo_record, release.zenodo_root_file)
+        _download(url, bundle, checksum)
+
+    wanted = wanted_root_files(release)
+    out.mkdir(exist_ok=True)
+    found = set()
+    with zipfile.ZipFile(bundle) as zf:
+        for info in zf.infolist():
+            if not info.filename.endswith(".tar.gz") or "root" not in info.filename.lower():
+                continue
+            with zf.open(info) as raw, tarfile.open(fileobj=raw, mode="r|gz") as tf:
+                for member in tf:
+                    name = Path(member.name).name
+                    if member.isfile() and name in wanted:
+                        member.name = name
+                        tf.extract(member, out, filter="data")
+                        found.add(name)
+    missing = wanted - found
+    if not found:  # keep the bundle and no marker, so that a later run can retry
+        raise FileNotFoundError(f"{release.name}: none of the {len(wanted)} expected ROOT files "
+                                f"found in {bundle}")
+    if missing:
+        log.warning("%s: %d expected ROOT files not in the bundle, e.g. %s",
+                    release.name, len(missing), sorted(missing)[0])
+    log.info("%s: %d ROOT files extracted to %s", release.name, len(found), out)
+    bundle.unlink()
+    marker.write_text(f"{len(found)}\n")
+    return out
