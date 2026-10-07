@@ -3,7 +3,7 @@ from pathlib import Path
 import astropy.units as u
 import numpy as np
 import pytest
-from gammapy.irf import EnergyDispersion2D
+from gammapy.irf import EnergyDependentMultiGaussPSF, EnergyDispersion2D
 from gammapy.maps import MapAxis
 
 from ctao_perf import load_release
@@ -22,6 +22,23 @@ def test_fill_edisp():
     filled = fill_edisp(EnergyDispersion2D(axes=[e, m, o], data=data))
     assert np.allclose(filled.data[3], data[1])
     assert np.allclose(filled.data[:2], data[:2])
+
+
+@pytest.mark.filterwarnings("ignore:divide by zero:RuntimeWarning")  # gammapy, in the empty bin
+def test_psf_filled():
+    e = MapAxis.from_energy_bounds(1 * u.TeV, 1000 * u.TeV, nbin=3, name="energy_true")
+    o = MapAxis.from_edges([0, 1, 2] * u.deg, name="offset")
+    names = ("sigma_1", "sigma_2", "sigma_3", "scale", "ampl_2", "ampl_3")
+    data = np.zeros((3, 2), dtype=[(n, "f4") for n in names])
+    data["sigma_1"][:2] = 0.05
+    data["scale"][:2] = 1e5  # highest-energy bin empty, as in Prod6 North
+    units = {n: u.deg for n in names[:3]} | {"scale": u.Unit("sr-1"), "ampl_2": u.one, "ampl_3": u.one}
+    psf = EnergyDependentMultiGaussPSF(axes=[e, o], data=data, unit=units)
+    centres = e.center.to_value("TeV")  # 3.16, 31.6, 316
+    energy = [centres[0], 10, centres[1], 100, centres[2]] * u.TeV
+    assert list(perf.psf_filled(psf, energy, 0.5 * u.deg)) == [True, True, True, False, False]
+    r68 = perf.angular_resolution({"psf": psf}, energy, offset=0.5 * u.deg)
+    assert np.all(np.isfinite(r68[:3])) and np.all(np.isnan(r68[3:]))
 
 
 def test_log_energy_axis():

@@ -16,7 +16,7 @@ Ratios are *gammapy / official*, over 0.1–50 TeV, the range where the analysis
 | Curve | What is computed | Median ratio (North / South) | Range | Where it gets worse |
 |---|---|---|---|---|
 | Differential sensitivity | gammapy `SensitivityEstimator` on an on/off dataset built from the FITS IRFs | 1.06 / 1.08 | 0.99–1.14 / 0.99–1.29 | below 0.04 TeV, above 10 TeV |
-| Angular resolution | 68 % containment radius of the Gaussian PSF | 1.01 / 1.00 | 0.87–1.08 / 0.93–1.07 (0.02–40 TeV) | North above 60 TeV |
+| Angular resolution | 68 % containment radius of the Gaussian PSF | 1.01 / 1.00 | 0.87–1.08 / 0.93–1.07 (0.02–40 TeV) | North: no value above 63 TeV (empty PSF) |
 | Energy resolution | 68 % half-width of (E_R − E_T)/E_T from the migration matrix | 1.01 / 1.09 | 0.79–1.16 / 0.95–1.20 | first and last bins |
 | Background rate | `BKG` cube integrated per bin, at 0.5° | 1.00 / 1.01 | 0.94–1.00 / 1.00–1.08 | |
 | Effective area | `EFFAREA` at 0.5°, no direction cut | 0.96 / 0.98 | 0.78–1.07 / 0.88–1.08, vs the ROOT area without direction cut | |
@@ -213,9 +213,13 @@ YAML).
 #### 5. No PSF above 79 TeV for Prod6 North
 
 *Not corrected.* In the Prod6 North file the PSF of the 0–1° offset bin is empty above 79 TeV
-(`SIGMA_1` and `SCALE` are 0), and so is `AngResEtrue_offaxis` bin 0. The gammapy containment radius
-is then 0, and `performance.sensitivity` returns NaN for these bins (without this, the 10-event
-criterion would give a finite but meaningless value). The on-axis `DiffSens` has values there.
+(`SIGMA_1` and `SCALE` are 0), and so is `AngResEtrue_offaxis` bin 0. gammapy does not return a
+zero radius there: it gives half its grid step (0.0002°) in the empty bins, and between the centre of
+the last filled bin (63 TeV) and that of the first empty one (100 TeV) it interpolates the parameters
+towards 0, which gives radii of 0.36–0.66°. Without a check, the 10-event criterion then gives a finite
+but meaningless sensitivity. `performance.psf_filled` marks the energies between the first and last
+filled bin centres; `performance.sensitivity` and `performance.angular_resolution` return NaN outside
+them. The on-axis `DiffSens` has values there.
 
 ### Remaining approximations
 
@@ -241,9 +245,11 @@ centres.
 
 **Approximations.** Gaussian instead of the full distribution, and 0–1° instead of on axis. The official
 0–1° radius differs from the on-axis one by up to 5 % in the median. Between 0.02 and 40 TeV the gammapy
-radius agrees with `AngResEtrue` within 13 % (North) and 7 % (South). Above 60 TeV for Prod6 North the
-FITS PSF is empty ([cause 5](#5-no-psf-above-79-tev-for-prod6-north)), which gives the factors of 1.7
-and 5 at 63 and 100 TeV.
+radius agrees with `AngResEtrue` within 13 % (North) and 7 % (South). For Prod6 North the FITS PSF is
+empty above 79 TeV ([cause 5](#5-no-psf-above-79-tev-for-prod6-north)), so the gammapy curve stops at
+63 TeV, the centre of the last filled bin. The same check removes the energies below the centre of the
+first filled bin (0.016 TeV for Prod6, 0.025 TeV for Prod5 South, whose first bin is empty), where
+gammapy would otherwise extrapolate.
 
 ## Energy resolution
 

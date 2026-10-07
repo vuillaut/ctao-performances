@@ -52,7 +52,8 @@ numpy as stated. `offset` defaults to 0.5°.
 | Function | Returns |
 |---|---|
 | `sensitivity(irfs, livetime, location="ctao_south", energy_axis=None, offset=0.5 deg, criteria=None)` | `(energy_axis, e2dnde [erg cm⁻² s⁻¹], table)`; NaN where undefined |
-| `angular_resolution(irfs, energy, offset, fraction=0.68)` | containment radius in deg at true energies |
+| `angular_resolution(irfs, energy, offset, fraction=0.68)` | containment radius in deg at true energies; NaN where the PSF is empty |
+| `psf_filled(psf, energy, offset)` | boolean array: true energy between the first and last PSF bin centres with non-zero parameters, at that offset |
 | `energy_resolution(irfs, energy_edges, axis="reco_energy", offset, index=2.62, fraction=0.68)` | half-width of (E_R−E_T)/E_T, one value per bin |
 | `effective_area(irfs, offset)` | `(true-energy axis, m²)` on the native binning |
 | `background_rate(irfs, offset)` | `(reco-energy axis, Hz deg⁻²)` per native bin |

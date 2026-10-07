@@ -106,11 +106,9 @@ def sensitivity(
     table["e_ref"] = e_mean.to(table["e_ref"].unit)
     table["e_ref"].description = "Arithmetic mean of the bin edges, where e2dnde is given"
     e2dnde = np.array(table["e2dnde"].quantity.to_value("erg cm-2 s-1"), dtype=float)
-    # an empty PSF (all parameters 0) has no on region, so no sensitivity; gammapy still
-    # returns a radius of half its grid step there, so test the containment instead
-    empty_psf = obs.psf.containment(energy_true=energy_axis.center, offset=offset,
-                                    rad=2 * u.deg) < 0.5
-    e2dnde[~np.isfinite(e2dnde) | (e2dnde <= 0) | empty_psf] = np.nan
+    # no PSF, no on region, so no sensitivity
+    no_psf = ~psf_filled(irfs["psf"], energy_axis.center, offset)
+    e2dnde[~np.isfinite(e2dnde) | (e2dnde <= 0) | no_psf] = np.nan
     return energy_axis, e2dnde, table
 
 
@@ -127,13 +125,31 @@ def _background_counts(irfs, energy_axis, offset, radii, livetime):
     return (rate * energy_axis.bin_width * solid_angle * livetime).to_value("")
 
 
+def psf_filled(psf, energy, offset=DEFAULT_OFFSET):
+    """True where the PSF at ``offset`` is defined at true ``energy``.
+
+    Energy bins the simulation did not populate have all PSF parameters 0 (Prod6 North above
+    79 TeV, the first bin of Prod5 South). gammapy does not return 0 there: it gives a radius
+    of half its grid step in the empty bins, and interpolates between a filled and an empty bin
+    centre, which gives radii of several tenths of a degree. The PSF is taken as defined between
+    the first and last filled bin centres of the offset bins used for the interpolation.
+    """
+    energy = u.Quantity(energy, "TeV")
+    e_axis, o_axis = psf.axes["energy_true"], psf.axes["offset"]
+    near = np.abs(o_axis.center - u.Quantity(offset, "deg")) < o_axis.bin_width
+    filled = (psf.data["scale"][:, near] > 0).all(axis=1)
+    if not filled.any():
+        return np.zeros(energy.shape, dtype=bool)
+    centres = e_axis.center[filled]
+    return (energy >= centres.min() * (1 - 1e-6)) & (energy <= centres.max() * (1 + 1e-6))
+
+
 def angular_resolution(irfs, energy, offset=DEFAULT_OFFSET, fraction=0.68):
-    """PSF containment radius (deg) at the given true energies."""
-    radius = irfs["psf"].containment_radius(
-        energy_true=u.Quantity(energy, "TeV"), offset=offset, fraction=fraction
-    )
+    """PSF containment radius (deg) at the given true energies, NaN where the PSF is empty."""
+    energy = u.Quantity(energy, "TeV")
+    radius = irfs["psf"].containment_radius(energy_true=energy, offset=offset, fraction=fraction)
     radius = radius.to_value("deg")
-    return np.where(radius > 0, radius, np.nan)
+    return np.where((radius > 0) & psf_filled(irfs["psf"], energy, offset), radius, np.nan)
 
 
 def _migration_weights(irfs, offset, index, migra):

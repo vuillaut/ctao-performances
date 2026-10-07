@@ -134,3 +134,9 @@ official figures, to mask bins below the plotted range.
   rows. This is a patch applied at load time; the file on disk is unchanged.
 - **`PSF_3GAUSS` is a single Gaussian** in every file, although the HDU can hold
   three. Do not read `SIGMA_2/3` expecting a tail.
+- **Empty PSF bins.** Some true-energy bins have all PSF parameters 0: Prod6 North 50 h
+  above 79 TeV in the 0–1° offset bin, and the first bin (0.0126–0.02 TeV) of Prod5 South.
+  gammapy replaces `SIGMA_1 = 0` by 1 when it reads the file and still returns a radius for
+  these energies (0.0002° in the empty bins, 0.36–0.66° when interpolating towards them).
+  `performance.psf_filled` gives the energies where the PSF is defined; the angular
+  resolution and the sensitivity are NaN elsewhere.

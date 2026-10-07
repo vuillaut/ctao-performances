@@ -107,9 +107,11 @@ sensitivity both for the source offset bin (0–1°) and on axis. Each curve,
 with the causes and the measured gap, is described in
 `docs/explanation/differences-from-official.md`.
 
-Known data issues handled in `irfs.py`: empty energy-dispersion columns at
-the highest energies (e.g. prod5 North 50 h) are filled with the last
-populated column.
+Known data issues: empty energy-dispersion columns at the highest energies
+(e.g. prod5 North 50 h) are filled with the last populated column
+(`irfs.py`); energies where the PSF is empty (e.g. Prod6 North 50 h above
+79 TeV) give NaN for the angular resolution and the sensitivity
+(`performance.psf_filled`).
 
 ## Citation
 
